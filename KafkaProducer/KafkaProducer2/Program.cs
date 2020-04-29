@@ -1,9 +1,8 @@
 ﻿using Confluent.Kafka;
-using Confluent.Kafka.Serialization;
+using LogsProcesor;
 using System;
-using System.Collections.Generic;
 using System.Text;
-using System.Threading;
+
 
 namespace KafkaProducer
 {
@@ -12,16 +11,17 @@ namespace KafkaProducer
 	{
 		public static void Main(string[] args)
 		{
-			string server = "";
-			string topic = "";
-			string message = "";
+			#region log4net
+			var logRepository = log4net.LogManager.GetRepository(System.Reflection.Assembly.GetEntryAssembly());
+			log4net.Config.XmlConfigurator.Configure(logRepository, new System.IO.FileInfo("log4net.config.xml"));
 
-			var config = new Dictionary<string, object> { { "bootstrap.servers", server } };
-			var producer = new Producer<Null, string>(config, null, new StringSerializer(Encoding.UTF8));
+			Logger producerLog = new Logger().SetLogger(log4net.LogManager.GetLogger(System.Reflection.Assembly.GetEntryAssembly(), "producer"));
+			#endregion
 
-			var commit = producer.ProduceAsync(topic, null, message);
-
-			Console.WriteLine($"offset {commit.Result.Offset}");
+			new BasicProducerTest(producerLog);
+			new BasicProducerAsyncTest(producerLog);
+			new BasicProducerAsyncMultiProducerTest(producerLog);
+			new BasicProducerAsyncMultiProducerTest(producerLog);
 		}
 	}
 }
